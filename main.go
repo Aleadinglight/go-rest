@@ -7,10 +7,10 @@ import (
 )
 
 type album struct {
-	ID     string
-	Title  string
-	Artist string
-	Price  float64
+	ID     string  `json:"id"`
+	Title  string  `json:"title"`
+	Artist string  `json:"artist"`
+	Price  float64 `json:"price"`
 }
 
 var albums = []album{
@@ -22,8 +22,8 @@ var albums = []album{
 func main() {
 	router := gin.Default()
 	router.GET("/albums", getAlbums)
+	router.GET("/albums/:id", getAlbumsByID)
 	router.POST("/albums", postAlbums)
-
 	router.Run("localhost:8080")
 }
 
@@ -33,11 +33,26 @@ func getAlbums(c *gin.Context) {
 
 func postAlbums(c *gin.Context) {
 	var newAlbum album
-
+	c.Request.URL.Query()
 	if err := c.BindJSON(&newAlbum); err != nil {
 		return
 	}
 
 	albums = append(albums, newAlbum)
 	c.JSON(http.StatusCreated, newAlbum)
+}
+
+func getAlbumsByID(c *gin.Context) {
+	id := c.Param("id")
+
+	// Loop over the list of albums, looking for
+	// an album whose ID value matches the parameter
+	for _, a := range albums {
+		if a.ID == id {
+			c.JSON(http.StatusOK, a)
+			return
+		}
+	}
+
+	c.JSON(http.StatusNotFound, gin.H{"message": "album not found"})
 }
